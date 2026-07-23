@@ -6,12 +6,15 @@
 // ============================================================
 
 let scene, camera, renderer, controls, raycaster, mouse;
-let bodyMeshes = {};       // id -> { mesh, data, angle }
-let clock;
+let bodyEntries = {};      // id -> { group, data, angle, visualMesh, clouds, corona[] }
+let clickTargets = [];     // flat list of invisible hit-spheres for raycasting
+let clock, elapsed = 0;
 let selectedId = null;
 let cameraTarget = new THREE.Vector3(0, 0, 0);
 let cameraDesiredPos = null;
 let isFlying = false;
+
+const textureLoader = new THREE.TextureLoader();
 
 const infoPanel = document.getElementById("info-panel");
 const infoName = document.getElementById("info-name");
@@ -25,7 +28,7 @@ function init() {
   scene = new THREE.Scene();
 
   camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 5000);
-  camera.position.set(0, 60, 140);
+  camera.position.set(0, 45, 100);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -35,13 +38,12 @@ function init() {
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
-  controls.minDistance = 8;      // zoom in limit
-  controls.maxDistance = 800;    // zoom out limit — poora system dekh sakein
+  controls.minDistance = 6;
+  controls.maxDistance = 900;
   controls.target.set(0, 0, 0);
 
-  // ambient + point light (sun-like)
-  scene.add(new THREE.AmbientLight(0x334155, 0.5));
-  const sunLight = new THREE.PointLight(0xffffff, 2, 0, 0.4);
+  scene.add(new THREE.AmbientLight(0x223344, 0.35));
+  const sunLight = new THREE.PointLight(0xffffff, 2.2, 0, 0.35);
   sunLight.position.set(0, 0, 0);
   scene.add(sunLight);
 
@@ -54,13 +56,12 @@ function init() {
 
   window.addEventListener("resize", onResize);
   renderer.domElement.addEventListener("click", onClick);
-
   document.getElementById("close-info").addEventListener("click", closeInfo);
 }
 
 function addStarfield() {
   const starGeo = new THREE.BufferGeometry();
-  const starCount = 2500;
+  const starCount = 3000;
   const positions = new Float32Array(starCount * 3);
   for (let i = 0; i < starCount; i++) {
     const radius = 600 + Math.random() * 900;
@@ -72,27 +73,148 @@ function addStarfield() {
   }
   starGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.1, sizeAttenuation: true });
-  const stars = new THREE.Points(starGeo, starMat);
-  scene.add(stars);
+  scene.add(new THREE.Points(starGeo, starMat));
+}
+
+// ---------- procedural sun surface texture (canvas, no download needed) ----------
+function createSunTexture() {
+  const size = 512;
+  const canvas = document.createElement("canvas");
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  const grad = ctx.createRadialGradient(size/2, size/2, size*0.1, size/2, size/2, size*0.7);
+  grad.addColorStop(0, "#fff3c4");
+  grad.addColorStop(0.4, "#ffcf4d");
+  grad.addColorStop(0.75, "#ff9d2e");
+  grad.addColorStop(1, "#ff6a1f");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+
+  // granulation blotches
+  for (let i = 0; i < 900; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const r = 4 + Math.random() * 14;
+    const shade = Math.random() > 0.5 ? "rgba(255,220,140,0.18)" : "rgba(200,70,10,0.18)";
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.fillStyle = shade;
+    ctx.fill();
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
+// ---------- corona glow sprite (canvas radial gradient, additive) ----------
+function createCoronaSprite(innerColor, outerColor, size, opacity) {
+  const canvasSize = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvasSize; canvas.height = canvasSize;
+  const ctx = canvas.getContext("2d");
+  const grad = ctx.createRadialGradient(canvasSize/2, canvasSize/2, 0, canvasSize/2, canvasSize/2, canvasSize/2);
+  grad.addColorStop(0, innerColor);
+  grad.addColorStop(0.5, outerColor);
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({
+    map: tex, transparent: true, opacity,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(size, size, 1);
+  return sprite;
+}
+
+// ---------- small billboard ring to show a body is clickable ----------
+function createTargetRing(color) {
+  const size = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size/2 - 6, 0, Math.PI*2);
+  ctx.stroke();
+  const tex = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.45, depthWrite: false });
+  return new THREE.Sprite(mat);
 }
 
 function buildBodies() {
   SOLAR_BODIES.forEach(data => {
-    const geo = new THREE.SphereGeometry(data.radius, 48, 48);
-    const matParams = { color: data.color };
-    if (data.type === "star") {
-      matParams.emissive = data.emissive || data.color;
-      matParams.emissiveIntensity = 1;
+    const group = new THREE.Group();
+    scene.add(group);
+    const entry = { group, data, angle: Math.random() * Math.PI * 2, corona: [] };
+
+    if (data.special === "sun") {
+      const geo = new THREE.SphereGeometry(data.radius, 64, 64);
+      const mat = new THREE.MeshBasicMaterial({ map: createSunTexture() });
+      const mesh = new THREE.Mesh(geo, mat);
+      group.add(mesh);
+      entry.visualMesh = mesh;
+
+      const c1 = createCoronaSprite("rgba(255,255,230,0.9)", "rgba(255,190,60,0.6)", data.radius*3.4, 0.55);
+      const c2 = createCoronaSprite("rgba(255,170,60,0.6)", "rgba(255,90,20,0.25)", data.radius*5.2, 0.35);
+      group.add(c1, c2);
+      entry.corona.push(c1, c2);
+
+      // sun is huge — click target = the sun mesh itself is big enough
+      mesh.userData.id = data.id;
+      clickTargets.push(mesh);
+    } else {
+      const geo = new THREE.SphereGeometry(data.radius, 48, 48);
+      const matParams = { color: data.color, roughness: 0.9, metalness: 0 };
+      if (data.texture) {
+        matParams.map = textureLoader.load(data.texture);
+        matParams.color = 0xffffff;
+      }
+      const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial(matParams));
+      group.add(mesh);
+      entry.visualMesh = mesh;
+
+      if (data.clouds) {
+        const cloudGeo = new THREE.SphereGeometry(data.radius * 1.015, 48, 48);
+        const cloudMat = new THREE.MeshStandardMaterial({
+          map: textureLoader.load(data.clouds),
+          transparent: true, opacity: 0.85, depthWrite: false
+        });
+        const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
+        group.add(cloudMesh);
+        entry.clouds = cloudMesh;
+      }
+
+      if (data.atmosphere) {
+        const atmoGeo = new THREE.SphereGeometry(data.radius * 1.12, 48, 48);
+        const atmoMat = new THREE.MeshBasicMaterial({
+          color: 0x66ccff, transparent: true, opacity: 0.18,
+          side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false
+        });
+        group.add(new THREE.Mesh(atmoGeo, atmoMat));
+      }
+
+      // invisible larger hit-sphere so small/far bodies are easy to click
+      const hitGeo = new THREE.SphereGeometry(Math.max(data.radius * 3.5, 2.5), 12, 12);
+      const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+      const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+      hitMesh.userData.id = data.id;
+      group.add(hitMesh);
+      clickTargets.push(hitMesh);
+
+      // subtle ring to hint "this is clickable"
+      const ring = createTargetRing("#7fd6ff");
+      ring.scale.set(data.radius*2.6, data.radius*2.6, 1);
+      group.add(ring);
     }
-    const mat = data.type === "star"
-      ? new THREE.MeshBasicMaterial({ color: data.color })
-      : new THREE.MeshStandardMaterial(matParams);
 
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.userData.id = data.id;
-    scene.add(mesh);
-
-    // orbit ring (only for bodies that actually orbit something)
+    // orbit ring on the ecliptic
     if (data.orbitRadius > 0) {
       const ringGeo = new THREE.RingGeometry(data.orbitRadius - 0.04, data.orbitRadius + 0.04, 128);
       const ringMat = new THREE.MeshBasicMaterial({ color: 0x2a3a55, side: THREE.DoubleSide, transparent: true, opacity: 0.35 });
@@ -101,11 +223,7 @@ function buildBodies() {
       scene.add(ring);
     }
 
-    bodyMeshes[data.id] = {
-      mesh,
-      data,
-      angle: Math.random() * Math.PI * 2
-    };
+    bodyEntries[data.id] = entry;
   });
 }
 
@@ -119,20 +237,17 @@ function onClick(event) {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
-  const meshList = Object.values(bodyMeshes).map(b => b.mesh);
-  const hit = raycaster.intersectObjects(meshList)[0];
-  if (hit) {
-    focusBody(hit.object.userData.id);
-  }
+  const hit = raycaster.intersectObjects(clickTargets)[0];
+  if (hit) focusBody(hit.object.userData.id);
 }
 
 function focusBody(id) {
-  const entry = bodyMeshes[id];
+  const entry = bodyEntries[id];
   if (!entry) return;
   selectedId = id;
 
-  const pos = entry.mesh.position.clone();
-  const dist = Math.max(entry.data.radius * 6, 10);
+  const pos = entry.group.position.clone();
+  const dist = Math.max(entry.data.radius * 7, 12);
   cameraDesiredPos = pos.clone().add(new THREE.Vector3(dist * 0.6, dist * 0.4, dist));
   cameraTarget = pos;
   isFlying = true;
@@ -162,29 +277,33 @@ function closeInfo() {
 function animate() {
   requestAnimationFrame(animate);
   const dt = clock.getDelta();
+  elapsed += dt;
 
-  // orbit + rotate each body
-  Object.values(bodyMeshes).forEach(entry => {
-    const { mesh, data } = entry;
+  Object.values(bodyEntries).forEach(entry => {
+    const { group, data, visualMesh, clouds, corona } = entry;
     if (data.orbitRadius > 0) {
       entry.angle += data.orbitSpeed * dt * 10;
-      mesh.position.x = Math.cos(entry.angle) * data.orbitRadius;
-      mesh.position.z = Math.sin(entry.angle) * data.orbitRadius;
+      group.position.x = Math.cos(entry.angle) * data.orbitRadius;
+      group.position.z = Math.sin(entry.angle) * data.orbitRadius;
     }
-    mesh.rotation.y += (data.rotationSpeed || 0);
+    if (visualMesh) visualMesh.rotation.y += (data.rotationSpeed || 0);
+    if (clouds) clouds.rotation.y += (data.rotationSpeed || 0) * 1.6;
+    if (corona && corona.length) {
+      const pulse = 1 + Math.sin(elapsed * 0.8) * 0.05;
+      corona.forEach((c, i) => { c.scale.set(c.scale.x, c.scale.x, 1); });
+      const base1 = data.radius * 3.4, base2 = data.radius * 5.2;
+      corona[0].scale.set(base1*pulse, base1*pulse, 1);
+      corona[1].scale.set(base2*(1/pulse), base2*(1/pulse), 1);
+    }
   });
 
-  // smooth camera fly-to when a body is selected
   if (isFlying && cameraDesiredPos) {
     camera.position.lerp(cameraDesiredPos, 0.06);
     controls.target.lerp(cameraTarget, 0.08);
     if (camera.position.distanceTo(cameraDesiredPos) < 0.5) isFlying = false;
   }
-
-  // keep camera target following the selected body if it's orbiting
-  if (selectedId && bodyMeshes[selectedId]) {
-    const followPos = bodyMeshes[selectedId].mesh.position;
-    if (!isFlying) controls.target.lerp(followPos, 0.05);
+  if (selectedId && bodyEntries[selectedId] && !isFlying) {
+    controls.target.lerp(bodyEntries[selectedId].group.position, 0.05);
   }
 
   controls.update();
