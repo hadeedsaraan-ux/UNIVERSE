@@ -6,19 +6,25 @@
 // Engine (js/engine.js) khud-ba-khud usko render, orbit,
 // aur click-to-narrate de dega. Is file ke alawa kuch
 // change karne ki zaroorat nahi.
+//
+// NAYE OPTIONAL FIELDS (agar realistic dikhana ho):
+//   texture: "image ka URL"       -> planet ki asli surface
+//   clouds: "image ka URL"        -> Earth jaisa clouds layer
+//   atmosphere: true              -> halka glow around planet
+//   special: "sun"                -> sirf Sun ke liye (glow+texture)
 // ============================================================
 
 const SOLAR_BODIES = [
   {
     id: "sun",
     name: "Sun",
-    type: "star",           // "star" | "planet" | "moon"
-    radius: 6,               // visual size
+    type: "star",
+    special: "sun",
+    radius: 7,
     color: 0xffcc33,
-    emissive: 0xffaa00,      // sun glows
-    orbitRadius: 0,          // sun sits at center
+    orbitRadius: 0,
     orbitSpeed: 0,
-    rotationSpeed: 0.001,
+    rotationSpeed: 0.0008,
     facts: [
       "The Sun holds ninety nine point eight percent of all the mass in our solar system.",
       "Light from the Sun takes about eight minutes to reach Earth.",
@@ -29,9 +35,12 @@ const SOLAR_BODIES = [
     id: "earth",
     name: "Earth",
     type: "planet",
-    radius: 1.2,
+    radius: 1.4,
     color: 0x2277ff,
-    orbitRadius: 40,
+    texture: "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_atmos_2048.jpg",
+    clouds: "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_clouds_1024.png",
+    atmosphere: true,
+    orbitRadius: 38,
     orbitSpeed: 0.010,
     rotationSpeed: 0.02,
     facts: [
@@ -41,20 +50,5 @@ const SOLAR_BODIES = [
     ]
   }
 
-  // ---- KAL SE YAHAN NAYE OBJECTS ADD HONGE, JAISE: ----
-  // {
-  //   id: "moon",
-  //   name: "Moon",
-  //   type: "moon",
-  //   radius: 0.35,
-  //   color: 0xaaaaaa,
-  //   orbitsAround: "earth",   // moon ke liye parent body ka id
-  //   orbitRadius: 3.5,
-  //   orbitSpeed: 0.04,
-  //   rotationSpeed: 0.005,
-  //   facts: [
-  //     "The Moon is slowly drifting away from Earth every year.",
-  //     "The same side of the Moon always faces Earth."
-  //   ]
-  // },
+  // ---- KAL SE YAHAN NAYE OBJECTS ADD HONGE ----
 ];
