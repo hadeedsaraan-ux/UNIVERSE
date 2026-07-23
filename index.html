@@ -9,16 +9,23 @@
 <style>
   :root{
     --void:#04070d;
-    --panel:#0b1220;
     --accent:#7fd6ff;
     --text:#eaf3ff;
     --mono:'Space Mono', monospace;
     --body:'Manrope', sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{width:100%;height:100%;background:var(--void);color:var(--text);font-family:var(--body);overflow:hidden;}
+  html,body{width:100%;height:100%;
+    background:radial-gradient(ellipse at 50% 30%, #0a1128 0%, #050810 55%, #020308 100%);
+    color:var(--text);font-family:var(--body);overflow:hidden;}
   #scene-container{position:fixed;inset:0;}
   #scene-container canvas{display:block;}
+
+  /* photographic vignette so it reads like a telescope frame, not a flat render */
+  #vignette{
+    position:fixed;inset:0;z-index:5;pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.55) 100%);
+  }
 
   #topbar{
     position:fixed;top:0;left:0;right:0;
@@ -28,13 +35,6 @@
     color:rgba(234,243,255,0.7);
     pointer-events:none;
   }
-  #topbar *{pointer-events:auto;}
-  #ambient-toggle{
-    background:none;border:1px solid rgba(234,243,255,0.25);color:inherit;
-    font-family:var(--mono);font-size:11px;padding:8px 14px;border-radius:20px;
-    cursor:pointer;letter-spacing:0.08em;
-  }
-  #ambient-toggle:hover{border-color:var(--accent);color:var(--accent);}
 
   #hint{
     position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
@@ -47,7 +47,7 @@
   #info-panel{
     position:fixed;top:0;right:0;height:100%;
     width:min(360px, 86vw);
-    background:rgba(11,18,32,0.9);
+    background:rgba(6,10,20,0.88);
     backdrop-filter:blur(10px);
     border-left:1px solid rgba(127,214,255,0.15);
     padding:80px 30px 30px;
@@ -68,10 +68,10 @@
 <body>
 
 <div id="scene-container"></div>
+<div id="vignette"></div>
 
 <div id="topbar">
   <span>SOLAR SYSTEM // LIVE BUILD</span>
-  <button id="ambient-toggle" aria-pressed="false">🔇 ambient off</button>
 </div>
 
 <div id="hint">drag to rotate · scroll to zoom out/in · <strong>click a body</strong> to learn about it</div>
@@ -82,25 +82,22 @@
   <ul id="info-facts"></ul>
 </div>
 
-<!-- Three.js core + OrbitControls (classic script tags, no build step) -->
+<!-- Three.js core + controls -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-<!-- our project files, in order -->
+<!-- postprocessing (for real bloom/glow, telescope-photo look) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+<!-- our project files -->
 <script src="js/bodies-data.js"></script>
 <script src="js/narration.js"></script>
 <script src="js/engine.js"></script>
-
-<script>
-  document.getElementById("ambient-toggle").addEventListener("click", (e)=>{
-    const btn = e.currentTarget;
-    const isOn = btn.getAttribute("aria-pressed") === "true";
-    const next = !isOn;
-    btn.setAttribute("aria-pressed", String(next));
-    btn.textContent = next ? "🔊 ambient on" : "🔇 ambient off";
-    toggleAmbient(next);
-  });
-</script>
 
 </body>
 </html>
