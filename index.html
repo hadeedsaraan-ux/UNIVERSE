@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solar System — Live Build</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Manrope:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#04070d;
+    --panel:#0b1220;
+    --accent:#7fd6ff;
+    --text:#eaf3ff;
+    --mono:'Space Mono', monospace;
+    --body:'Manrope', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;background:var(--void);color:var(--text);font-family:var(--body);overflow:hidden;}
+  #scene-container{position:fixed;inset:0;}
+  #scene-container canvas{display:block;}
+
+  #topbar{
+    position:fixed;top:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:20px 26px;z-index:10;
+    font-family:var(--mono);font-size:12px;letter-spacing:0.1em;
+    color:rgba(234,243,255,0.7);
+    pointer-events:none;
+  }
+  #topbar *{pointer-events:auto;}
+  #ambient-toggle{
+    background:none;border:1px solid rgba(234,243,255,0.25);color:inherit;
+    font-family:var(--mono);font-size:11px;padding:8px 14px;border-radius:20px;
+    cursor:pointer;letter-spacing:0.08em;
+  }
+  #ambient-toggle:hover{border-color:var(--accent);color:var(--accent);}
+
+  #hint{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    font-family:var(--mono);font-size:12px;letter-spacing:0.08em;
+    color:rgba(234,243,255,0.55);z-index:10;text-align:center;
+    transition:opacity .5s ease;
+  }
+  #hint strong{color:var(--accent);}
+
+  #info-panel{
+    position:fixed;top:0;right:0;height:100%;
+    width:min(360px, 86vw);
+    background:rgba(11,18,32,0.9);
+    backdrop-filter:blur(10px);
+    border-left:1px solid rgba(127,214,255,0.15);
+    padding:80px 30px 30px;
+    transform:translateX(100%);
+    transition:transform .5s cubic-bezier(.2,.9,.3,1);
+    z-index:20;
+  }
+  #info-panel.visible{transform:translateX(0);}
+  #info-panel h2{font-family:var(--mono);font-size:1.6rem;margin-bottom:20px;color:var(--accent);}
+  #info-panel ul{list-style:none;display:flex;flex-direction:column;gap:14px;}
+  #info-panel li{font-size:0.95rem;line-height:1.6;color:rgba(234,243,255,0.85);padding-left:16px;border-left:2px solid rgba(127,214,255,0.3);}
+  #close-info{
+    position:absolute;top:26px;right:26px;
+    background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<div id="scene-container"></div>
+
+<div id="topbar">
+  <span>SOLAR SYSTEM // LIVE BUILD</span>
+  <button id="ambient-toggle" aria-pressed="false">🔇 ambient off</button>
+</div>
+
+<div id="hint">drag to rotate · scroll to zoom out/in · <strong>click a body</strong> to learn about it</div>
+
+<div id="info-panel">
+  <button id="close-info" aria-label="close">✕</button>
+  <h2 id="info-name">—</h2>
+  <ul id="info-facts"></ul>
+</div>
+
+<!-- Three.js core + OrbitControls (classic script tags, no build step) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<!-- our project files, in order -->
+<script src="js/bodies-data.js"></script>
+<script src="js/narration.js"></script>
+<script src="js/engine.js"></script>
+
+<script>
+  document.getElementById("ambient-toggle").addEventListener("click", (e)=>{
+    const btn = e.currentTarget;
+    const isOn = btn.getAttribute("aria-pressed") === "true";
+    const next = !isOn;
+    btn.setAttribute("aria-pressed", String(next));
+    btn.textContent = next ? "🔊 ambient on" : "🔇 ambient off";
+    toggleAmbient(next);
+  });
+</script>
+
+</body>
+</html>
