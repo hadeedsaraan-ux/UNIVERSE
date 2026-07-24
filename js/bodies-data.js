@@ -38,6 +38,18 @@ const SOLAR_BODIES = [
     soundStyle: "drone"
   },
   {
+    id: "venus",
+    name: "Venus",
+    type: "planet",
+    radius: 1.33,
+    color: 0xe8d9a0,
+    orbitRadius: 27,
+    orbitSpeed: 0.0162,
+    rotationSpeed: -0.0005,
+    soundFreq: 110,
+    soundStyle: "drone"
+  },
+  {
     id: "earth",
     name: "Earth",
     type: "planet",
