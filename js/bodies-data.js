@@ -30,7 +30,7 @@ const SOLAR_BODIES = [
     name: "Mercury",
     type: "planet",
     radius: 0.55,
-    color: 0x9c9186,
+    color: 0x8c8378,
     orbitRadius: 22,
     orbitSpeed: 0.042,
     rotationSpeed: 0.001,
@@ -42,7 +42,7 @@ const SOLAR_BODIES = [
     name: "Venus",
     type: "planet",
     radius: 1.33,
-    color: 0xe8d9a0,
+    color: 0xd9b46a,
     orbitRadius: 27,
     orbitSpeed: 0.0162,
     rotationSpeed: -0.0005,
@@ -67,3 +67,4 @@ const SOLAR_BODIES = [
 
   // ---- KAL SE YAHAN NAYE OBJECTS ADD HONGE ----
 ];
+
