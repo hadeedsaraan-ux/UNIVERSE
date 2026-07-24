@@ -31,7 +31,7 @@ const SOLAR_BODIES = [
     type: "planet",
     radius: 0.55,
     color: 0x9c9186,
-    orbitRadius: 15,
+    orbitRadius: 22,
     orbitSpeed: 0.042,
     rotationSpeed: 0.001,
     soundFreq: 95,
