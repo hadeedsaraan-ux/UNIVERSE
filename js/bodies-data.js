@@ -2,13 +2,14 @@
 // SOLAR SYSTEM — DAILY DATA FILE
 // ============================================================
 // Naya body add karne ke liye bas SOLAR_BODIES list mein ek
-// naya object add karein. soundFreq/soundStyle us body ki
-// "signature tone" set karte hain (real recorded frequency data
-// se inspired synthesis — space mein sound travel nahi karta,
-// ye ek sonification hai).
+// naya object add karein.
 //
-// soundStyle options: "drone" (deep steady hum, sitaron/gas giants/thin-atmosphere ke liye)
-//                      "chirp" (rising-falling warble, magnetosphere waali cheez, planets ke liye)
+// soundStyle options: "drone" (deep steady hum)
+//                      "chirp" (rising-falling warble)
+//
+// bands: [color, color, ...]  -> gas giants ke liye striped look
+//         (Jupiter/Saturn/Uranus/Neptune jaise, image download nahi hoti,
+//          engine khud bands bana deta hai)
 // ============================================================
 
 const SOLAR_BODIES = [
@@ -75,6 +76,18 @@ const SOLAR_BODIES = [
     rotationSpeed: 0.018,
     soundFreq: 130,
     soundStyle: "drone"
+  },
+  {
+    id: "jupiter",
+    name: "Jupiter",
+    type: "planet",
+    radius: 7.0,
+    bands: ["#d8ca9d", "#c2a67c", "#e8dcc0", "#b98b5e", "#d8ca9d", "#c9a876"],
+    orbitRadius: 90,
+    orbitSpeed: 0.00084,
+    rotationSpeed: 0.04,
+    soundFreq: 160,
+    soundStyle: "chirp"
   }
 
   // ---- KAL SE YAHAN NAYE OBJECTS ADD HONGE ----
