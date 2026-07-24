@@ -7,7 +7,7 @@
 // se inspired synthesis — space mein sound travel nahi karta,
 // ye ek sonification hai).
 //
-// soundStyle options: "drone" (deep steady hum, sitaron/gas giants ke liye)
+// soundStyle options: "drone" (deep steady hum, sitaron/gas giants/thin-atmosphere ke liye)
 //                      "chirp" (rising-falling warble, magnetosphere waali cheez, planets ke liye)
 // ============================================================
 
@@ -63,6 +63,18 @@ const SOLAR_BODIES = [
     rotationSpeed: 0.02,
     soundFreq: 220,
     soundStyle: "chirp"
+  },
+  {
+    id: "mars",
+    name: "Mars",
+    type: "planet",
+    radius: 0.75,
+    color: 0xb5502f,
+    orbitRadius: 58,
+    orbitSpeed: 0.0053,
+    rotationSpeed: 0.018,
+    soundFreq: 130,
+    soundStyle: "drone"
   }
 
   // ---- KAL SE YAHAN NAYE OBJECTS ADD HONGE ----
