@@ -26,6 +26,18 @@ const SOLAR_BODIES = [
     soundStyle: "drone"
   },
   {
+    id: "mercury",
+    name: "Mercury",
+    type: "planet",
+    radius: 0.55,
+    color: 0x9c9186,
+    orbitRadius: 15,
+    orbitSpeed: 0.042,
+    rotationSpeed: 0.001,
+    soundFreq: 95,
+    soundStyle: "drone"
+  },
+  {
     id: "earth",
     name: "Earth",
     type: "planet",
