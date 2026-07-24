@@ -8,8 +8,6 @@
 //                      "chirp" (rising-falling warble)
 //
 // bands: [color, color, ...]  -> gas giants ke liye striped look
-//         (Jupiter/Saturn/Uranus/Neptune jaise, image download nahi hoti,
-//          engine khud bands bana deta hai)
 // ============================================================
 
 const SOLAR_BODIES = [
@@ -18,7 +16,7 @@ const SOLAR_BODIES = [
     name: "Sun",
     type: "star",
     special: "sun",
-    radius: 7,
+    radius: 16,
     color: 0xffcc33,
     orbitRadius: 0,
     orbitSpeed: 0,
@@ -32,7 +30,7 @@ const SOLAR_BODIES = [
     type: "planet",
     radius: 0.55,
     color: 0x8c8378,
-    orbitRadius: 22,
+    orbitRadius: 26,
     orbitSpeed: 0.042,
     rotationSpeed: 0.001,
     soundFreq: 95,
@@ -44,7 +42,7 @@ const SOLAR_BODIES = [
     type: "planet",
     radius: 1.33,
     color: 0xd9b46a,
-    orbitRadius: 27,
+    orbitRadius: 34,
     orbitSpeed: 0.0162,
     rotationSpeed: -0.0005,
     soundFreq: 110,
@@ -59,7 +57,7 @@ const SOLAR_BODIES = [
     texture: "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_atmos_2048.jpg",
     clouds: "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_clouds_1024.png",
     atmosphere: true,
-    orbitRadius: 38,
+    orbitRadius: 46,
     orbitSpeed: 0.010,
     rotationSpeed: 0.02,
     soundFreq: 220,
@@ -71,7 +69,7 @@ const SOLAR_BODIES = [
     type: "planet",
     radius: 0.75,
     color: 0xb5502f,
-    orbitRadius: 58,
+    orbitRadius: 66,
     orbitSpeed: 0.0053,
     rotationSpeed: 0.018,
     soundFreq: 130,
@@ -81,9 +79,9 @@ const SOLAR_BODIES = [
     id: "jupiter",
     name: "Jupiter",
     type: "planet",
-    radius: 7.0,
+    radius: 6.2,
     bands: ["#d8ca9d", "#c2a67c", "#e8dcc0", "#b98b5e", "#d8ca9d", "#c9a876"],
-    orbitRadius: 90,
+    orbitRadius: 105,
     orbitSpeed: 0.00084,
     rotationSpeed: 0.04,
     soundFreq: 160,
