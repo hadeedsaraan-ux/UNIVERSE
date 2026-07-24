@@ -54,7 +54,7 @@ function init() {
   composer = new THREE.EffectComposer(renderer);
   composer.addPass(new THREE.RenderPass(scene, camera));
   const bloomPass = new THREE.UnrealBloomPass(
-    new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.7, 0.12
+    new THREE.Vector2(window.innerWidth, window.innerHeight), 1.1, 0.5, 0.22
   );
   composer.addPass(bloomPass);
 
@@ -242,7 +242,7 @@ function focusBody(id) {
   const entry = bodyEntries[id];
   if (!entry) return;
   selectedId = id;
-  entry.paused = true; // freeze its orbit so the camera can actually settle on it
+  entry.paused = true;
 
   const pos = entry.group.position.clone();
   const dist = Math.max(entry.data.radius * 6.5, 11);
