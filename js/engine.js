@@ -31,9 +31,9 @@ function init() {
   camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 5000);
   camera.position.copy(DEFAULT_CAM_POS);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // capped for weaker PCs
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
   renderer.outputEncoding = THREE.sRGBEncoding;
@@ -53,8 +53,9 @@ function init() {
 
   composer = new THREE.EffectComposer(renderer);
   composer.addPass(new THREE.RenderPass(scene, camera));
+  // bloom rendered at half resolution — same visual glow, much lighter on the GPU
   const bloomPass = new THREE.UnrealBloomPass(
-    new THREE.Vector2(window.innerWidth, window.innerHeight), 1.1, 0.5, 0.22
+    new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 1.1, 0.5, 0.22
   );
   composer.addPass(bloomPass);
 
@@ -71,7 +72,7 @@ function init() {
 }
 
 function addStarfield() {
-  const brightCount = 700;
+  const brightCount = 400;
   const brightGeo = new THREE.BufferGeometry();
   const brightPos = new Float32Array(brightCount * 3);
   const brightCol = new Float32Array(brightCount * 3);
@@ -92,7 +93,7 @@ function addStarfield() {
   const brightMat = new THREE.PointsMaterial({ size: 1.8, vertexColors: true, transparent: true, opacity: 0.95 });
   scene.add(new THREE.Points(brightGeo, brightMat));
 
-  const faintCount = 3500;
+  const faintCount = 1800;
   const faintGeo = new THREE.BufferGeometry();
   const faintPos = new Float32Array(faintCount * 3);
   for (let i = 0; i < faintCount; i++) {
@@ -120,7 +121,7 @@ function createSunTexture() {
   grad.addColorStop(1, "#e05c12");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, size, size);
-  for (let i = 0; i < 1100; i++) {
+  for (let i = 0; i < 700; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
     const r = 3 + Math.random() * 11;
@@ -155,7 +156,7 @@ function buildBodies() {
     const entry = { group, data, angle: Math.random() * Math.PI * 2, paused: false };
 
     if (data.special === "sun") {
-      const geo = new THREE.SphereGeometry(data.radius, 64, 64);
+      const geo = new THREE.SphereGeometry(data.radius, 48, 48);
       const mat = new THREE.MeshBasicMaterial({ map: createSunTexture() });
       const mesh = new THREE.Mesh(geo, mat);
       group.add(mesh);
@@ -163,7 +164,7 @@ function buildBodies() {
       mesh.userData.id = data.id;
       clickTargets.push(mesh);
     } else {
-      const geo = new THREE.SphereGeometry(data.radius, 48, 48);
+      const geo = new THREE.SphereGeometry(data.radius, 32, 32);
       const matParams = { color: data.color, roughness: 0.95, metalness: 0 };
       if (data.texture) {
         matParams.map = textureLoader.load(data.texture);
@@ -174,7 +175,7 @@ function buildBodies() {
       entry.visualMesh = mesh;
 
       if (data.clouds) {
-        const cloudGeo = new THREE.SphereGeometry(data.radius * 1.015, 48, 48);
+        const cloudGeo = new THREE.SphereGeometry(data.radius * 1.015, 32, 32);
         const cloudMat = new THREE.MeshStandardMaterial({
           map: textureLoader.load(data.clouds),
           transparent: true, opacity: 0.8, depthWrite: false
@@ -185,7 +186,7 @@ function buildBodies() {
       }
 
       if (data.atmosphere) {
-        const atmoGeo = new THREE.SphereGeometry(data.radius * 1.12, 48, 48);
+        const atmoGeo = new THREE.SphereGeometry(data.radius * 1.12, 32, 32);
         const atmoMat = new THREE.MeshBasicMaterial({
           color: 0x66ccff, transparent: true, opacity: 0.15,
           side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false
@@ -193,7 +194,7 @@ function buildBodies() {
         group.add(new THREE.Mesh(atmoGeo, atmoMat));
       }
 
-      const hitGeo = new THREE.SphereGeometry(Math.max(data.radius * 3.5, 2.5), 12, 12);
+      const hitGeo = new THREE.SphereGeometry(Math.max(data.radius * 3.5, 2.5), 10, 10);
       const hitMat = new THREE.MeshBasicMaterial({ visible: false });
       const hitMesh = new THREE.Mesh(hitGeo, hitMat);
       hitMesh.userData.id = data.id;
@@ -206,7 +207,7 @@ function buildBodies() {
     }
 
     if (data.orbitRadius > 0) {
-      const ringGeo = new THREE.RingGeometry(data.orbitRadius - 0.04, data.orbitRadius + 0.04, 128);
+      const ringGeo = new THREE.RingGeometry(data.orbitRadius - 0.04, data.orbitRadius + 0.04, 96);
       const ringMat = new THREE.MeshBasicMaterial({ color: 0x223148, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
       const orbitRing = new THREE.Mesh(ringGeo, ringMat);
       orbitRing.rotation.x = Math.PI / 2;
