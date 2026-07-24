@@ -14,7 +14,7 @@ let cameraTarget = new THREE.Vector3(0, 0, 0);
 let cameraDesiredPos = null;
 let isFlying = false;
 
-const DEFAULT_CAM_POS = new THREE.Vector3(0, 40, 95);
+const DEFAULT_CAM_POS = new THREE.Vector3(0, 110, 230);
 const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
 
 const textureLoader = new THREE.TextureLoader();
@@ -33,7 +33,7 @@ function init() {
 
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // capped for weaker PCs
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
   renderer.outputEncoding = THREE.sRGBEncoding;
@@ -43,7 +43,7 @@ function init() {
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minDistance = 6;
-  controls.maxDistance = 900;
+  controls.maxDistance = 1400;
   controls.target.copy(DEFAULT_TARGET);
 
   scene.add(new THREE.AmbientLight(0x1a2438, 0.3));
@@ -53,7 +53,6 @@ function init() {
 
   composer = new THREE.EffectComposer(renderer);
   composer.addPass(new THREE.RenderPass(scene, camera));
-  // bloom rendered at half resolution — same visual glow, much lighter on the GPU
   const bloomPass = new THREE.UnrealBloomPass(
     new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 1.1, 0.5, 0.22
   );
@@ -134,6 +133,41 @@ function createSunTexture() {
   return new THREE.CanvasTexture(canvas);
 }
 
+function createBandedTexture(colors, size = 512) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  const bandCount = colors.length;
+  const heights = [];
+  for (let i = 0; i < bandCount; i++) {
+    heights.push((size / bandCount) * (0.6 + Math.random() * 0.8));
+  }
+  const sum = heights.reduce((a, b) => a + b, 0);
+  const scaleF = size / sum;
+
+  let y = 0;
+  for (let i = 0; i < bandCount; i++) {
+    const h = heights[i] * scaleF;
+    ctx.fillStyle = colors[i];
+    ctx.fillRect(0, y, size, h + 1);
+    y += h;
+  }
+  for (let i = 0; i < 500; i++) {
+    const xx = Math.random() * size;
+    const yy = Math.random() * size;
+    const w = 15 + Math.random() * 90;
+    const hgt = 2 + Math.random() * 6;
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.06})`;
+    ctx.fillRect(xx, yy, w, hgt);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
 function createTargetRing(color) {
   const size = 128;
   const canvas = document.createElement("canvas");
@@ -165,11 +199,16 @@ function buildBodies() {
       clickTargets.push(mesh);
     } else {
       const geo = new THREE.SphereGeometry(data.radius, 32, 32);
-      const matParams = { color: data.color, roughness: 0.95, metalness: 0 };
-      if (data.texture) {
+      const matParams = { color: data.color || 0xffffff, roughness: 0.95, metalness: 0 };
+
+      if (data.bands) {
+        matParams.map = createBandedTexture(data.bands);
+        matParams.color = 0xffffff;
+      } else if (data.texture) {
         matParams.map = textureLoader.load(data.texture);
         matParams.color = 0xffffff;
       }
+
       const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial(matParams));
       group.add(mesh);
       entry.visualMesh = mesh;
