@@ -5,9 +5,10 @@
 // real orbital periods ke ratio se calculate kiye gaye hain.
 //
 // bands: [color, color, ...]  -> gas giants ke liye striped look
-// rings: true                  -> Saturn/Uranus jaisi rings
+// rings: [{inner, outer, color, opacity}, ...]
+//         -> har planet ki apni tarah ki rings (Saturn = bright/wide,
+//            Uranus = thin/dark/faint — jaisa real mein hai)
 // axialTilt: degrees           -> planet apni spin-axis par kitna "leta" hua hai
-//                                  (negative rotationSpeed = ulta/retrograde ghoomta hai)
 // ============================================================
 
 const SOLAR_BODIES = [
@@ -93,8 +94,13 @@ const SOLAR_BODIES = [
     type: "planet",
     radius: 3.6,
     bands: ["#e8dcb0", "#d8c68f", "#f0e6c0", "#c9b57a"],
-    rings: true,
     axialTilt: 27,
+    rings: [
+      { inner: 1.3,  outer: 1.55, color: 0xcbb98c, opacity: 0.5 },
+      { inner: 1.58, outer: 1.7,  color: 0x8f8264, opacity: 0.22 },
+      { inner: 1.73, outer: 2.05, color: 0xd8c9a0, opacity: 0.55 },
+      { inner: 2.08, outer: 2.3,  color: 0xb8a878, opacity: 0.35 }
+    ],
     orbitRadius: 150,
     orbitSpeed: 0.0003437,
     rotationSpeed: 0.038,
@@ -107,8 +113,13 @@ const SOLAR_BODIES = [
     type: "planet",
     radius: 2.3,
     color: 0xa8dee0,
-    rings: true,
     axialTilt: 98,
+    rings: [
+      { inner: 1.4,  outer: 1.44, color: 0x3a3a3a, opacity: 0.35 },
+      { inner: 1.52, outer: 1.55, color: 0x2e2e2e, opacity: 0.28 },
+      { inner: 1.66, outer: 1.69, color: 0x333333, opacity: 0.3 },
+      { inner: 1.8,  outer: 1.84, color: 0x282828, opacity: 0.22 }
+    ],
     orbitRadius: 210,
     orbitSpeed: 0.0001204,
     rotationSpeed: -0.03,
