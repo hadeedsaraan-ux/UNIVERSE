@@ -14,7 +14,7 @@ let cameraTarget = new THREE.Vector3(0, 0, 0);
 let cameraDesiredPos = null;
 let isFlying = false;
 
-const DEFAULT_CAM_POS = new THREE.Vector3(0, 110, 230);
+const DEFAULT_CAM_POS = new THREE.Vector3(0, 140, 300);
 const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
 
 const textureLoader = new THREE.TextureLoader();
@@ -183,6 +183,24 @@ function createTargetRing(color) {
   return new THREE.Sprite(mat);
 }
 
+// ---------- planetary rings (Saturn etc.) ----------
+function addRings(group, data) {
+  const bands = [
+    { inner: 1.3,  outer: 1.55, color: 0xcbb98c, opacity: 0.55 },
+    { inner: 1.58, outer: 1.7,  color: 0x8f8264, opacity: 0.25 }, // gap (Cassini-division-like)
+    { inner: 1.73, outer: 2.05, color: 0xd8c9a0, opacity: 0.6 },
+    { inner: 2.08, outer: 2.3,  color: 0xb8a878, opacity: 0.4 }
+  ];
+  const tiltRad = (27 * Math.PI) / 180;
+  bands.forEach(b => {
+    const geo = new THREE.RingGeometry(data.radius * b.inner, data.radius * b.outer, 64);
+    const mat = new THREE.MeshBasicMaterial({ color: b.color, transparent: true, opacity: b.opacity, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = Math.PI / 2 - tiltRad;
+    group.add(mesh);
+  });
+}
+
 function buildBodies() {
   SOLAR_BODIES.forEach(data => {
     const group = new THREE.Group();
@@ -231,6 +249,10 @@ function buildBodies() {
           side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false
         });
         group.add(new THREE.Mesh(atmoGeo, atmoMat));
+      }
+
+      if (data.rings) {
+        addRings(group, data);
       }
 
       const hitGeo = new THREE.SphereGeometry(Math.max(data.radius * 3.5, 2.5), 10, 10);
