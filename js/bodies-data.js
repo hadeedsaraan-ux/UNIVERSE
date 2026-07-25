@@ -1,14 +1,14 @@
 // ============================================================
 // SOLAR SYSTEM — DAILY DATA FILE
 // ============================================================
-// Naya body add karne ke liye bas SOLAR_BODIES list mein ek
-// naya object add karein.
-//
-// soundStyle options: "drone" (deep steady hum)
-//                      "chirp" (rising-falling warble)
+// orbitSpeed values Mercury ko "standard/fastest" maan kar
+// real orbital periods ke ratio se calculate kiye gaye hain
+// (Mercury 88 din, Venus 225, Earth 365, Mars 687,
+//  Jupiter 4333, Saturn 10759 din — jitna real mein slow,
+//  utna hi yahan slow).
 //
 // bands: [color, color, ...]  -> gas giants ke liye striped look
-// rings: true                  -> Saturn jaisi rings (radius se auto-scale hoti hain)
+// rings: true                  -> Saturn jaisi rings
 // ============================================================
 
 const SOLAR_BODIES = [
@@ -44,7 +44,7 @@ const SOLAR_BODIES = [
     radius: 1.33,
     color: 0xd9b46a,
     orbitRadius: 34,
-    orbitSpeed: 0.0162,
+    orbitSpeed: 0.016427,
     rotationSpeed: -0.0005,
     soundFreq: 110,
     soundStyle: "drone"
@@ -59,7 +59,7 @@ const SOLAR_BODIES = [
     clouds: "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_clouds_1024.png",
     atmosphere: true,
     orbitRadius: 46,
-    orbitSpeed: 0.010,
+    orbitSpeed: 0.010126,
     rotationSpeed: 0.02,
     soundFreq: 220,
     soundStyle: "chirp"
@@ -71,7 +71,7 @@ const SOLAR_BODIES = [
     radius: 0.75,
     color: 0xb5502f,
     orbitRadius: 66,
-    orbitSpeed: 0.0053,
+    orbitSpeed: 0.005382,
     rotationSpeed: 0.018,
     soundFreq: 130,
     soundStyle: "drone"
@@ -83,7 +83,7 @@ const SOLAR_BODIES = [
     radius: 5.2,
     bands: ["#d8ca9d", "#c2a67c", "#e8dcc0", "#b98b5e", "#d8ca9d", "#c9a876"],
     orbitRadius: 105,
-    orbitSpeed: 0.00084,
+    orbitSpeed: 0.0008533,
     rotationSpeed: 0.04,
     soundFreq: 160,
     soundStyle: "chirp"
@@ -92,11 +92,11 @@ const SOLAR_BODIES = [
     id: "saturn",
     name: "Saturn",
     type: "planet",
-    radius: 4.4,
+    radius: 3.6,
     bands: ["#e8dcb0", "#d8c68f", "#f0e6c0", "#c9b57a"],
     rings: true,
     orbitRadius: 150,
-    orbitSpeed: 0.00034,
+    orbitSpeed: 0.0003437,
     rotationSpeed: 0.038,
     soundFreq: 140,
     soundStyle: "chirp"
@@ -104,4 +104,3 @@ const SOLAR_BODIES = [
 
   // ---- KAL SE YAHAN NAYE OBJECTS ADD HONGE ----
 ];
-
