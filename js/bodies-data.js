@@ -2,13 +2,12 @@
 // SOLAR SYSTEM — DAILY DATA FILE
 // ============================================================
 // orbitSpeed values Mercury ko "standard/fastest" maan kar
-// real orbital periods ke ratio se calculate kiye gaye hain
-// (Mercury 88 din, Venus 225, Earth 365, Mars 687,
-//  Jupiter 4333, Saturn 10759 din — jitna real mein slow,
-//  utna hi yahan slow).
+// real orbital periods ke ratio se calculate kiye gaye hain.
 //
 // bands: [color, color, ...]  -> gas giants ke liye striped look
-// rings: true                  -> Saturn jaisi rings
+// rings: true                  -> Saturn/Uranus jaisi rings
+// axialTilt: degrees           -> planet apni spin-axis par kitna "leta" hua hai
+//                                  (negative rotationSpeed = ulta/retrograde ghoomta hai)
 // ============================================================
 
 const SOLAR_BODIES = [
@@ -95,10 +94,25 @@ const SOLAR_BODIES = [
     radius: 3.6,
     bands: ["#e8dcb0", "#d8c68f", "#f0e6c0", "#c9b57a"],
     rings: true,
+    axialTilt: 27,
     orbitRadius: 150,
     orbitSpeed: 0.0003437,
     rotationSpeed: 0.038,
     soundFreq: 140,
+    soundStyle: "chirp"
+  },
+  {
+    id: "uranus",
+    name: "Uranus",
+    type: "planet",
+    radius: 2.3,
+    color: 0xa8dee0,
+    rings: true,
+    axialTilt: 98,
+    orbitRadius: 210,
+    orbitSpeed: 0.0001204,
+    rotationSpeed: -0.03,
+    soundFreq: 100,
     soundStyle: "chirp"
   }
 
