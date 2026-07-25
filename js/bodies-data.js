@@ -7,9 +7,8 @@
 // soundStyle options: "drone" (deep steady hum)
 //                      "chirp" (rising-falling warble)
 //
-// bands: [color, ...]   -> gas giants ke liye striped look
-// rings: { inner, outer, colors: [...] }  -> Saturn jaise rings
-//         inner/outer planet ke radius ke multiples hain
+// bands: [color, color, ...]  -> gas giants ke liye striped look
+// rings: true                  -> Saturn jaisi rings (radius se auto-scale hoti hain)
 // ============================================================
 
 const SOLAR_BODIES = [
@@ -81,7 +80,7 @@ const SOLAR_BODIES = [
     id: "jupiter",
     name: "Jupiter",
     type: "planet",
-    radius: 5.4,
+    radius: 5.2,
     bands: ["#d8ca9d", "#c2a67c", "#e8dcc0", "#b98b5e", "#d8ca9d", "#c9a876"],
     orbitRadius: 105,
     orbitSpeed: 0.00084,
@@ -93,9 +92,9 @@ const SOLAR_BODIES = [
     id: "saturn",
     name: "Saturn",
     type: "planet",
-    radius: 4.6,
-    bands: ["#e6dab8", "#d8c99a", "#f2e8cc", "#c9b98a", "#e6dab8"],
-    rings: { inner: 1.4, outer: 2.4, colors: ["#c9b98a", "#a8976a", "#e6dab8", "#8f7d55", "#c9b98a"] },
+    radius: 4.4,
+    bands: ["#e8dcb0", "#d8c68f", "#f0e6c0", "#c9b57a"],
+    rings: true,
     orbitRadius: 150,
     orbitSpeed: 0.00034,
     rotationSpeed: 0.038,
