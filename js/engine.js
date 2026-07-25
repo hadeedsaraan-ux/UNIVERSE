@@ -46,8 +46,13 @@ function init() {
   controls.maxDistance = 1400;
   controls.target.copy(DEFAULT_TARGET);
 
-  scene.add(new THREE.AmbientLight(0x1a2438, 0.3));
-  const sunLight = new THREE.PointLight(0xfff2d0, 2.6, 0, 0.3);
+  // low ambient floor light so far/dark sides aren't pure black
+  scene.add(new THREE.AmbientLight(0x1a2438, 0.22));
+
+  // Sun's own light — real inverse-square falloff (decay: 2).
+  // Sun's own glow (bloom) is separate and untouched by this;
+  // this only controls how much light REACHES each planet.
+  const sunLight = new THREE.PointLight(0xfff2d0, 900, 0, 2);
   sunLight.position.set(0, 0, 0);
   scene.add(sunLight);
 
@@ -183,11 +188,10 @@ function createTargetRing(color) {
   return new THREE.Sprite(mat);
 }
 
-// ---------- planetary rings (Saturn etc.) ----------
 function addRings(group, data) {
   const bands = [
     { inner: 1.3,  outer: 1.55, color: 0xcbb98c, opacity: 0.55 },
-    { inner: 1.58, outer: 1.7,  color: 0x8f8264, opacity: 0.25 }, // gap (Cassini-division-like)
+    { inner: 1.58, outer: 1.7,  color: 0x8f8264, opacity: 0.25 },
     { inner: 1.73, outer: 2.05, color: 0xd8c9a0, opacity: 0.6 },
     { inner: 2.08, outer: 2.3,  color: 0xb8a878, opacity: 0.4 }
   ];
