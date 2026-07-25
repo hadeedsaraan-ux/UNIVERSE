@@ -6,8 +6,7 @@
 //
 // bands: [color, color, ...]  -> gas giants ke liye striped look
 // rings: [{inner, outer, color, opacity}, ...]
-//         -> har planet ki apni tarah ki rings (Saturn = bright/wide,
-//            Uranus = thin/dark/faint — jaisa real mein hai)
+//         -> har planet ki apni tarah ki rings
 // axialTilt: degrees           -> planet apni spin-axis par kitna "leta" hua hai
 // ============================================================
 
@@ -125,7 +124,25 @@ const SOLAR_BODIES = [
     rotationSpeed: -0.03,
     soundFreq: 100,
     soundStyle: "chirp"
+  },
+  {
+    id: "neptune",
+    name: "Neptune",
+    type: "planet",
+    radius: 2.2,
+    color: 0x3d5ba9,
+    axialTilt: 28,
+    rings: [
+      { inner: 1.35, outer: 1.37, color: 0x24314f, opacity: 0.3 },
+      { inner: 1.5,  outer: 1.52, color: 0x1c273f, opacity: 0.22 }
+    ],
+    orbitRadius: 290,
+    orbitSpeed: 0.0000614,
+    rotationSpeed: 0.035,
+    soundFreq: 90,
+    soundStyle: "chirp"
   }
 
   // ---- KAL SE YAHAN NAYE OBJECTS ADD HONGE ----
 ];
+
