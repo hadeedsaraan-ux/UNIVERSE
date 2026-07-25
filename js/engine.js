@@ -14,7 +14,7 @@ let cameraTarget = new THREE.Vector3(0, 0, 0);
 let cameraDesiredPos = null;
 let isFlying = false;
 
-const DEFAULT_CAM_POS = new THREE.Vector3(0, 140, 300);
+const DEFAULT_CAM_POS = new THREE.Vector3(0, 170, 380);
 const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
 
 const textureLoader = new THREE.TextureLoader();
@@ -43,16 +43,12 @@ function init() {
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minDistance = 6;
-  controls.maxDistance = 1400;
+  controls.maxDistance = 1800;
   controls.target.copy(DEFAULT_TARGET);
 
-  // low ambient floor light so far/dark sides aren't pure black
-  scene.add(new THREE.AmbientLight(0x1a2438, 0.22));
+  scene.add(new THREE.AmbientLight(0x1a2438, 0.14));
 
-  // Sun's own light — real inverse-square falloff (decay: 2).
-  // Sun's own glow (bloom) is separate and untouched by this;
-  // this only controls how much light REACHES each planet.
-  const sunLight = new THREE.PointLight(0xfff2d0, 900, 0, 2);
+  const sunLight = new THREE.PointLight(0xfff2d0, 1600, 0, 2);
   sunLight.position.set(0, 0, 0);
   scene.add(sunLight);
 
@@ -188,20 +184,14 @@ function createTargetRing(color) {
   return new THREE.Sprite(mat);
 }
 
-function addRings(group, data) {
-  const bands = [
-    { inner: 1.3,  outer: 1.55, color: 0xcbb98c, opacity: 0.55 },
-    { inner: 1.58, outer: 1.7,  color: 0x8f8264, opacity: 0.25 },
-    { inner: 1.73, outer: 2.05, color: 0xd8c9a0, opacity: 0.6 },
-    { inner: 2.08, outer: 2.3,  color: 0xb8a878, opacity: 0.4 }
-  ];
-  const tiltRad = (27 * Math.PI) / 180;
+// rings ab har body apne data.rings array se define karti hai
+function addRings(spinGroup, radius, bands) {
   bands.forEach(b => {
-    const geo = new THREE.RingGeometry(data.radius * b.inner, data.radius * b.outer, 64);
+    const geo = new THREE.RingGeometry(radius * b.inner, radius * b.outer, 64);
     const mat = new THREE.MeshBasicMaterial({ color: b.color, transparent: true, opacity: b.opacity, side: THREE.DoubleSide });
     const mesh = new THREE.Mesh(geo, mat);
-    mesh.rotation.x = Math.PI / 2 - tiltRad;
-    group.add(mesh);
+    mesh.rotation.x = Math.PI / 2;
+    spinGroup.add(mesh);
   });
 }
 
@@ -220,6 +210,11 @@ function buildBodies() {
       mesh.userData.id = data.id;
       clickTargets.push(mesh);
     } else {
+      const spinGroup = new THREE.Group();
+      const tiltRad = ((data.axialTilt || 0) * Math.PI) / 180;
+      spinGroup.rotation.z = tiltRad;
+      group.add(spinGroup);
+
       const geo = new THREE.SphereGeometry(data.radius, 32, 32);
       const matParams = { color: data.color || 0xffffff, roughness: 0.95, metalness: 0 };
 
@@ -232,7 +227,7 @@ function buildBodies() {
       }
 
       const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial(matParams));
-      group.add(mesh);
+      spinGroup.add(mesh);
       entry.visualMesh = mesh;
 
       if (data.clouds) {
@@ -242,7 +237,7 @@ function buildBodies() {
           transparent: true, opacity: 0.8, depthWrite: false
         });
         const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
-        group.add(cloudMesh);
+        spinGroup.add(cloudMesh);
         entry.clouds = cloudMesh;
       }
 
@@ -252,11 +247,11 @@ function buildBodies() {
           color: 0x66ccff, transparent: true, opacity: 0.15,
           side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false
         });
-        group.add(new THREE.Mesh(atmoGeo, atmoMat));
+        spinGroup.add(new THREE.Mesh(atmoGeo, atmoMat));
       }
 
-      if (data.rings) {
-        addRings(group, data);
+      if (data.rings && data.rings.length) {
+        addRings(spinGroup, data.radius, data.rings);
       }
 
       const hitGeo = new THREE.SphereGeometry(Math.max(data.radius * 3.5, 2.5), 10, 10);
